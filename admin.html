@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin — Miwa Chan Store ✿</title>
+  <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;600;700&family=Pacifico&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --pink: #FF6B9D; --pink-dim: #e05585; --pink-light: #FFB3D1;
+      --lilac: #C084FC; --lilac-light: #E9D5FF;
+      --mint: #34D399; --gold: #FBBF24;
+      --bg: #FFF5F9; --bg2: #FFFFFF; --bg3: #FFF0F5;
+      --border: #FFD6E8; --text: #3D2B3D; --muted: #B08A9E;
+      --shadow: rgba(255,107,157,0.15);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Quicksand', sans-serif; min-height: 100vh; }
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: 0;
+      background-image: radial-gradient(circle, #FFB3D1 1px, transparent 1px);
+      background-size: 32px 32px; opacity: 0.18; pointer-events: none;
+    }
+
+    /* ── LOGIN ── */
+    #loginScreen {
+      position: fixed; inset: 0; z-index: 500;
+      background: var(--bg); display: flex; align-items: center; justify-content: center;
+    }
+    .login-box {
+      background: var(--bg2); border: 2px solid var(--border);
+      border-top: 4px solid var(--pink);
+      border-radius: 24px; padding: 40px; width: 360px; text-align: center;
+      box-shadow: 0 20px 60px var(--shadow);
+    }
+    .login-logo { font-family: 'Pacifico', cursive; font-size: 1.6rem; color: var(--pink); margin-bottom: 4px; }
+    .login-sub { font-size: 0.75rem; font-weight: 600; letter-spacing: 2px; color: var(--muted); margin-bottom: 28px; }
+    .login-input {
+      width: 100%; background: var(--bg3); border: 2px solid var(--border);
+      color: var(--text); font-family: 'Quicksand', sans-serif; font-size: 0.9rem; font-weight: 500;
+      padding: 11px 16px; border-radius: 12px; outline: none; margin-bottom: 12px; transition: border-color .2s;
+    }
+    .login-input:focus { border-color: var(--pink); }
+    .login-input::placeholder { color: var(--muted); }
+    .btn-login {
+      width: 100%; background: linear-gradient(135deg, var(--pink), var(--lilac));
+      color: #fff; border: none; font-family: 'Quicksand', sans-serif;
+      font-size: 0.9rem; font-weight: 700; padding: 13px; border-radius: 12px;
+      cursor: pointer; transition: opacity .2s; box-shadow: 0 6px 20px rgba(255,107,157,0.35);
+    }
+    .btn-login:hover { opacity: 0.88; }
+    #loginError { color: var(--pink); font-size: 0.75rem; font-weight: 600; margin-top: 12px; min-height: 18px; }
+
+    /* ── NAV ── */
+    #appScreen { display: none; }
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(255,255,255,0.92); backdrop-filter: blur(16px);
+      border-bottom: 2px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem; height: 64px;
+      box-shadow: 0 4px 20px var(--shadow);
+    }
+    .nav-logo { font-family: 'Pacifico', cursive; font-size: 1.2rem; color: var(--pink); }
+    .nav-logo span { color: var(--lilac); font-size: 0.7rem; font-family: 'Quicksand', sans-serif; font-weight: 700; letter-spacing: 2px; }
+    .nav-right { display: flex; align-items: center; gap: 12px; }
+    .nav-user { font-size: 0.8rem; font-weight: 600; color: var(--muted); }
+    .btn-logout {
+      background: none; border: 2px solid var(--border);
+      color: var(--muted); font-family: 'Quicksand', sans-serif;
+      font-size: 0.75rem; font-weight: 700; padding: 6px 14px;
+      border-radius: 999px; cursor: pointer; transition: all .2s;
+    }
+    .btn-logout:hover { border-color: var(--pink); color: var(--pink); }
+
+    /* ── TABS ── */
+    .tabs { display: flex; border-bottom: 2px solid var(--border); padding: 0 2rem; background: var(--bg2); gap: 4px; }
+    .tab-btn {
+      background: none; border: none; border-bottom: 3px solid transparent; margin-bottom: -2px;
+      color: var(--muted); font-family: 'Quicksand', sans-serif; font-size: 0.85rem; font-weight: 700;
+      letter-spacing: 1px; padding: 16px 20px; cursor: pointer; transition: all .2s;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { border-bottom-color: var(--pink); color: var(--pink); }
+
+    /* ── CONTENT ── */
+    .content { padding: 32px 2rem; max-width: 1200px; margin: 0 auto; }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── STATS ── */
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .stat-card {
+      background: var(--bg2); border: 2px solid var(--border);
+      border-radius: 18px; padding: 20px 24px;
+      box-shadow: 0 4px 16px var(--shadow);
+    }
+    .stat-icon { font-size: 1.6rem; margin-bottom: 8px; }
+    .stat-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 2px; color: var(--muted); margin-bottom: 4px; }
+    .stat-val { font-size: 2rem; font-weight: 700; color: var(--text); font-family: 'Pacifico', cursive; }
+    .stat-val.pink { color: var(--pink); }
+    .stat-val.lilac { color: var(--lilac); }
+    .stat-val.mint { color: var(--mint); }
+
+    /* ── TABLE ── */
+    .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+    .section-title-sm { font-family: 'Pacifico', cursive; font-size: 1.1rem; color: var(--text); }
+    .table-wrap { overflow-x: auto; background: var(--bg2); border: 2px solid var(--border); border-radius: 18px; box-shadow: 0 4px 16px var(--shadow); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th { text-align: left; padding: 12px 16px; font-size: 0.65rem; letter-spacing: 2px; color: var(--muted); border-bottom: 2px solid var(--border); text-transform: uppercase; font-weight: 700; }
+    td { padding: 12px 16px; border-bottom: 1px solid #FFF0F5; vertical-align: middle; font-weight: 500; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,107,157,0.03); }
+
+    .status-badge { font-size: 0.65rem; font-weight: 700; letter-spacing: 1px; padding: 4px 12px; border-radius: 999px; text-transform: uppercase; }
+    .status-pending { background: rgba(251,191,36,0.15); color: var(--gold); border: 1px solid rgba(251,191,36,0.3); }
+    .status-done { background: rgba(52,211,153,0.15); color: var(--mint); border: 1px solid rgba(52,211,153,0.3); }
+    .status-cancel { background: rgba(255,107,157,0.12); color: var(--pink); border: 1px solid rgba(255,107,157,0.3); }
+
+    .action-btn {
+      background: none; border: 2px solid var(--border);
+      color: var(--muted); font-family: 'Quicksand', sans-serif;
+      font-size: 0.7rem; font-weight: 700; padding: 4px 12px;
+      border-radius: 999px; cursor: pointer; transition: all .2s; margin-right: 4px;
+    }
+    .action-btn:hover { border-color: var(--pink); color: var(--pink); }
+    .action-btn.mint:hover { border-color: var(--mint); color: var(--mint); }
+
+    /* ── PRODUCTS TAB LAYOUT ── */
+    .products-layout { display: grid; grid-template-columns: 380px 1fr; gap: 24px; align-items: start; }
+    @media(max-width: 900px) { .products-layout { grid-template-columns: 1fr; } }
+
+    /* ── FORM ── */
+    .form-card {
+      background: var(--bg2); border: 2px solid var(--border);
+      border-radius: 20px; padding: 24px;
+      box-shadow: 0 4px 16px var(--shadow); position: sticky; top: 80px;
+    }
+    .form-card-title { font-family: 'Pacifico', cursive; font-size: 1.1rem; color: var(--pink); margin-bottom: 20px; }
+    .form-group { margin-bottom: 14px; }
+    .form-label { display: block; font-size: 0.72rem; font-weight: 700; color: var(--muted); margin-bottom: 6px; letter-spacing: 1px; }
+    .form-input {
+      width: 100%; background: var(--bg3); border: 2px solid var(--border);
+      color: var(--text); font-family: 'Quicksand', sans-serif;
+      font-size: 0.88rem; font-weight: 500; padding: 9px 13px; border-radius: 10px; outline: none; transition: border-color .2s;
+    }
+    .form-input:focus { border-color: var(--pink); }
+    .form-input::placeholder { color: var(--muted); }
+    select.form-input { cursor: pointer; }
+    textarea.form-input { resize: vertical; min-height: 70px; }
+
+    /* ── LIVE PREVIEW ── */
+    .preview-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 2px; color: var(--muted); margin: 16px 0 10px; text-transform: uppercase; }
+    .preview-card {
+      background: var(--bg); border: 2px dashed var(--border);
+      border-radius: 16px; overflow: hidden;
+      transition: all .2s;
+    }
+    .preview-card .card-icon { padding: 20px; text-align: center; font-size: 2.4rem; background: linear-gradient(135deg, #FFF0F7, #F3E8FF); }
+    .preview-card .card-body { padding: 14px 16px; }
+    .preview-card .card-category { font-size: 0.65rem; font-weight: 700; letter-spacing: 2px; color: var(--lilac); text-transform: uppercase; margin-bottom: 4px; }
+    .preview-card .card-name { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .preview-card .card-desc { font-size: 0.75rem; color: var(--muted); line-height: 1.5; margin-bottom: 10px; }
+    .preview-card .card-footer { display: flex; align-items: center; justify-content: space-between; }
+    .preview-card .card-price { font-size: 1rem; font-weight: 700; color: var(--pink); }
+    .preview-card .btn-buy-sm {
+      background: linear-gradient(135deg, var(--pink), var(--lilac));
+      color: #fff; border: none; font-family: 'Quicksand', sans-serif;
+      font-size: 0.7rem; font-weight: 700; padding: 6px 14px;
+      border-radius: 999px; cursor: default;
+    }
+
+    .btn-submit {
+      width: 100%; background: linear-gradient(135deg, var(--pink), var(--lilac));
+      color: #fff; border: none; font-family: 'Quicksand', sans-serif;
+      font-size: 0.9rem; font-weight: 700; padding: 12px;
+      border-radius: 12px; cursor: pointer; transition: opacity .2s; margin-top: 4px;
+      box-shadow: 0 6px 20px rgba(255,107,157,0.3);
+    }
+    .btn-submit:hover { opacity: 0.88; }
+
+    /* ── PRODUCT CARDS GRID ── */
+    .admin-products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+    .admin-product-card {
+      background: var(--bg2); border: 2px solid var(--border);
+      border-radius: 18px; overflow: hidden;
+      transition: transform .2s, box-shadow .2s;
+      position: relative;
+    }
+    .admin-product-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px var(--shadow); }
+    .apc-icon { padding: 20px; text-align: center; font-size: 2.4rem; background: linear-gradient(135deg, #FFF0F7, #F3E8FF); }
+    .apc-badge { position: absolute; top: 10px; right: 10px; background: var(--pink); color: #fff; font-size: 0.6rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; }
+    .apc-badge.new { background: var(--lilac); }
+    .apc-body { padding: 14px 16px; }
+    .apc-cat { font-size: 0.65rem; font-weight: 700; letter-spacing: 2px; color: var(--lilac); text-transform: uppercase; margin-bottom: 4px; }
+    .apc-name { font-size: 0.9rem; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .apc-desc { font-size: 0.75rem; color: var(--muted); line-height: 1.4; margin-bottom: 10px; }
+    .apc-footer { display: flex; align-items: center; justify-content: space-between; }
+    .apc-price { font-size: 1rem; font-weight: 700; color: var(--pink); }
+    .apc-stock { font-size: 0.7rem; font-weight: 600; color: var(--muted); margin-top: 6px; }
+    .apc-del {
+      background: none; border: 2px solid var(--border);
+      color: var(--muted); font-family: 'Quicksand', sans-serif;
+      font-size: 0.7rem; font-weight: 700; padding: 4px 12px;
+      border-radius: 999px; cursor: pointer; transition: all .2s;
+    }
+    .apc-del:hover { border-color: var(--pink); color: var(--pink); background: rgba(255,107,157,0.06); }
+
+    .empty-state { text-align: center; padding: 60px 20px; color: var(--muted); }
+    .empty-state .icon { font-size: 2.5rem; margin-bottom: 12px; }
+    .empty-state p { font-size: 0.85rem; font-weight: 600; }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed; bottom: 24px; right: 24px; z-index: 999;
+      background: var(--bg2); border: 2px solid var(--border); border-radius: 14px;
+      border-left: 4px solid var(--pink); padding: 14px 20px;
+      font-size: 0.85rem; font-weight: 600;
+      transform: translateX(120%); transition: transform .3s; max-width: 300px;
+      box-shadow: 0 8px 24px var(--shadow);
+    }
+    #toast.show { transform: translateX(0); }
+    #toast.success { border-left-color: var(--mint); }
+
+    .loading { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 60px; color: var(--muted); font-size: 0.85rem; font-weight: 600; }
+    .spinner { width: 18px; height: 18px; border: 3px solid var(--border); border-top-color: var(--pink); border-radius: 50%; animation: spin .6s linear infinite; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+    .empty-row td { text-align: center; padding: 40px; color: var(--muted); font-size: 0.82rem; font-weight: 600; }
+
+    @media(max-width:600px) { nav{padding:0 1rem;} .content{padding:20px 1rem;} }
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">Miwa Chan ✿</div>
+    <div class="login-sub">ADMIN ACCESS ONLY</div>
+    <input class="login-input" type="email" id="loginEmail" placeholder="Email admin..."/>
+    <input class="login-input" type="password" id="loginPass" placeholder="Password..." onkeydown="if(event.key==='Enter')doLogin()"/>
+    <button class="btn-login" onclick="doLogin()">💕 Masuk</button>
+    <div id="loginError"></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appScreen">
+  <nav>
+    <div class="nav-logo">Miwa Chan <span>✿ ADMIN</span></div>
+    <div class="nav-right">
+      <span class="nav-user" id="navUser"></span>
+      <button class="btn-logout" onclick="doLogout()">Logout</button>
+    </div>
+  </nav>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('dashboard',this)">📊 Dashboard</button>
+    <button class="tab-btn" onclick="switchTab('orders',this)">🛍️ Orders</button>
+    <button class="tab-btn" onclick="switchTab('products',this)">📦 Produk</button>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="tab-panel active" id="tab-dashboard">
+      <div class="stats-row">
+        <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-label">TOTAL PRODUK</div><div class="stat-val pink" id="statProducts">-</div></div>
+        <div class="stat-card"><div class="stat-icon">🛍️</div><div class="stat-label">TOTAL ORDERS</div><div class="stat-val lilac" id="statOrders">-</div></div>
+        <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-label">PENDING</div><div class="stat-val" id="statPending">-</div></div>
+        <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-label">SELESAI</div><div class="stat-val mint" id="statDone">-</div></div>
+      </div>
+      <div class="section-header">
+        <div class="section-title-sm">Order Terbaru 🌸</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Waktu</th><th>Pembeli</th><th>Produk</th><th>Total</th><th>Status</th></tr></thead>
+          <tbody id="recentOrdersBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="tab-panel" id="tab-orders">
+      <div class="section-header">
+        <div class="section-title-sm">Semua Orders 🛍️</div>
+        <button class="action-btn" onclick="loadOrders()">↻ Refresh</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Waktu</th><th>Pembeli</th><th>Kontak</th><th>Produk</th><th>Qty</th><th>Subtotal</th><th>Diskon</th><th>Total</th><th>Status</th><th>Aksi</th></tr></thead>
+          <tbody id="ordersBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PRODUCTS -->
+    <div class="tab-panel" id="tab-products">
+      <div class="products-layout">
+
+        <!-- FORM + PREVIEW -->
+        <div>
+          <div class="form-card">
+            <div class="form-card-title">✿ Tambah Produk</div>
+            <div class="form-group">
+              <label class="form-label">Nama Produk</label>
+              <input class="form-input" id="pName" placeholder="Nama produk..." oninput="updatePreview()"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Harga (Rp)</label>
+              <input class="form-input" id="pPrice" type="number" placeholder="50000" oninput="updatePreview()"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Kategori</label>
+              <input class="form-input" id="pCategory" placeholder="Tools, Game, Premium..." oninput="updatePreview()"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Stok (kosong = unlimited)</label>
+              <input class="form-input" id="pStock" type="number" placeholder="999"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Icon (emoji)</label>
+              <input class="form-input" id="pIcon" placeholder="🌸" maxlength="4" oninput="updatePreview()"/>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Badge</label>
+              <select class="form-input" id="pBadge" onchange="updatePreview()">
+                <option value="">Tidak ada</option>
+                <option value="HOT">HOT 🔥</option>
+                <option value="NEW">NEW ✨</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Deskripsi</label>
+              <textarea class="form-input" id="pDesc" placeholder="Deskripsi produk..." oninput="updatePreview()"></textarea>
+            </div>
+
+            <!-- LIVE PREVIEW -->
+            <div class="preview-label">✿ Preview Card</div>
+            <div class="preview-card" id="previewCard">
+              <div class="card-icon" id="prevIcon">📦</div>
+              <div class="card-body">
+                <div class="card-category" id="prevCat">Kategori</div>
+                <div class="card-name" id="prevName">Nama Produk</div>
+                <div class="card-desc" id="prevDesc">Deskripsi produk akan muncul di sini...</div>
+                <div class="card-footer">
+                  <div class="card-price" id="prevPrice">Rp 0</div>
+                  <button class="btn-buy-sm">Beli 💕</button>
+                </div>
+              </div>
+            </div>
+
+            <button class="btn-submit" onclick="addProduct()" style="margin-top:16px">💕 Simpan Produk</button>
+          </div>
+        </div>
+
+        <!-- PRODUCT CARDS -->
+        <div>
+          <div class="section-header">
+            <div class="section-title-sm">Daftar Produk 📦</div>
+            <button class="action-btn" onclick="loadProducts()">↻ Refresh</button>
+          </div>
+          <div class="admin-products-grid" id="productsGrid">
+            <div class="loading"><div class="spinner"></div> Loading...</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc, serverTimestamp, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  // 🔥 GANTI DENGAN FIREBASE CONFIG LU
+  const firebaseConfig = {
+    apiKey: "AIzaSyCdbBCB8qWcOYm1tWyrRuNWlB0AR0a0t2s",
+    authDomain: "hanz-2b797.firebaseapp.com",
+    projectId: "hanz-2b797",
+    storageBucket: "hanz-2b797.firebasestorage.app",
+    messagingSenderId: "1048647550598",
+    appId: "1:1048647550598:android:df5e959df95c6f9772b307"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const auth = getAuth(app);
+
+  // ── AUTH ──────────────────────────────────────────────────────
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('appScreen').style.display = 'block';
+      document.getElementById('navUser').textContent = user.email;
+      loadAll();
+    } else {
+      document.getElementById('loginScreen').style.display = 'flex';
+      document.getElementById('appScreen').style.display = 'none';
+    }
+  });
+
+  window.doLogin = async () => {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pass = document.getElementById('loginPass').value;
+    document.getElementById('loginError').textContent = '';
+    try { await signInWithEmailAndPassword(auth, email, pass); }
+    catch(e) { document.getElementById('loginError').textContent = '⚠️ Email atau password salah!'; }
+  };
+  window.doLogout = () => signOut(auth);
+
+  window.switchTab = (name, btn) => {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-'+name).classList.add('active');
+    btn.classList.add('active');
+  };
+
+  async function loadAll() { await Promise.all([loadOrders(), loadProducts()]); updateStats(); }
+
+  // ── ORDERS ────────────────────────────────────────────────────
+  let orders = [];
+  window.loadOrders = async () => {
+    const snap = await getDocs(query(collection(db,'orders'), orderBy('createdAt','desc')));
+    orders = snap.docs.map(d => ({id:d.id,...d.data()}));
+    renderOrders(); renderRecentOrders(); updateStats();
+  };
+
+  function renderOrders() {
+    const tbody = document.getElementById('ordersBody');
+    if (!orders.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="8">Belum ada order nih~ 🌸</td></tr>'; return; }
+    tbody.innerHTML = orders.map(o => `
+      <tr>
+        <td>${o.createdAt?.toDate ? o.createdAt.toDate().toLocaleString('id-ID') : '-'}</td>
+        <td>${o.buyerName}</td><td>${o.buyerContact}</td><td>${o.productName}</td>
+        <td>${o.qty}</td>
+        <td>Rp ${parseInt(o.subtotal||o.total).toLocaleString('id-ID')}</td>
+        <td>${o.discountAmount > 0 ? `<span style="color:var(--mint);font-weight:700">- Rp ${parseInt(o.discountAmount).toLocaleString('id-ID')}<br><small style="color:var(--muted)">${o.voucherCode||''}</small></span>` : '-'}</td>
+        <td style="font-weight:700;color:var(--pink)">Rp ${parseInt(o.total).toLocaleString('id-ID')}</td>
+        <td><span class="status-badge status-${o.status}">${o.status}</span></td>
+        <td>
+          ${o.status==='pending'
+            ? `<button class="action-btn mint" onclick="updateOrderStatus('${o.id}','done')">✓ Done</button>
+               <button class="action-btn" onclick="updateOrderStatus('${o.id}','cancel')">✕ Cancel</button>`
+            : `<button class="action-btn" onclick="deleteOrder('${o.id}')">Hapus</button>`}
+        </td>
+      </tr>`).join('');
+  }
+
+  function renderRecentOrders() {
+    const tbody = document.getElementById('recentOrdersBody');
+    const recent = orders.slice(0,5);
+    if (!recent.length) { tbody.innerHTML = '<tr class="empty-row"><td colspan="5">Belum ada order nih~ 🌸</td></tr>'; return; }
+    tbody.innerHTML = recent.map(o => `
+      <tr>
+        <td>${o.createdAt?.toDate ? o.createdAt.toDate().toLocaleString('id-ID') : '-'}</td>
+        <td>${o.buyerName}</td><td>${o.productName}</td>
+        <td>Rp ${parseInt(o.total).toLocaleString('id-ID')}</td>
+        <td><span class="status-badge status-${o.status}">${o.status}</span></td>
+      </tr>`).join('');
+  }
+
+  window.updateOrderStatus = async (id, status) => {
+    await updateDoc(doc(db,'orders',id), {status});
+    showToast('💕 Status diupdate: '+status, true); loadOrders();
+  };
+  window.deleteOrder = async (id) => {
+    if (!confirm('Hapus order ini?')) return;
+    await deleteDoc(doc(db,'orders',id)); showToast('🗑️ Order dihapus'); loadOrders();
+  };
+
+  // ── PRODUCTS ──────────────────────────────────────────────────
+  let products = [];
+  window.loadProducts = async () => {
+    const snap = await getDocs(query(collection(db,'products'), orderBy('createdAt','desc')));
+    products = snap.docs.map(d => ({id:d.id,...d.data()}));
+    renderProductCards(); updateStats();
+  };
+
+  function renderProductCards() {
+    const grid = document.getElementById('productsGrid');
+    if (!products.length) {
+      grid.innerHTML = '<div class="empty-state"><div class="icon">📦</div><p>Belum ada produk. Tambah sekarang yuk!</p></div>';
+      return;
+    }
+    grid.innerHTML = products.map(p => {
+      const badge = p.badge ? `<div class="apc-badge ${p.badge==='NEW'?'new':''}">${p.badge}</div>` : '';
+      return `
+      <div class="admin-product-card">
+        ${badge}
+        <div class="apc-icon">${p.icon||'📦'}</div>
+        <div class="apc-body">
+          <div class="apc-cat">${p.category||'Digital'}</div>
+          <div class="apc-name">${p.name}</div>
+          <div class="apc-desc">${p.description||''}</div>
+          <div class="apc-footer">
+            <div class="apc-price">Rp ${parseInt(p.price).toLocaleString('id-ID')}</div>
+            <button class="apc-del" onclick="deleteProduct('${p.id}')">🗑️ Hapus</button>
+          </div>
+          <div class="apc-stock">Stok: ${p.stock ?? '∞'}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  window.addProduct = async () => {
+    const name = document.getElementById('pName').value.trim();
+    const price = parseInt(document.getElementById('pPrice').value);
+    if (!name || !price) { showToast('⚠️ Nama dan harga wajib diisi ya~'); return; }
+    const stock = document.getElementById('pStock').value;
+    await addDoc(collection(db,'products'), {
+      name, price,
+      description: document.getElementById('pDesc').value.trim(),
+      category: document.getElementById('pCategory').value.trim(),
+      stock: stock ? parseInt(stock) : null,
+      icon: document.getElementById('pIcon').value.trim() || '🌸',
+      badge: document.getElementById('pBadge').value || null,
+      createdAt: serverTimestamp()
+    });
+    ['pName','pPrice','pDesc','pCategory','pStock','pIcon'].forEach(id => document.getElementById(id).value='');
+    document.getElementById('pBadge').value='';
+    updatePreview();
+    showToast('💕 Produk berhasil ditambahkan!', true); loadProducts();
+  };
+
+  window.deleteProduct = async (id) => {
+    if (!confirm('Hapus produk ini?')) return;
+    await deleteDoc(doc(db,'products',id)); showToast('🗑️ Produk dihapus'); loadProducts();
+  };
+
+  // ── LIVE PREVIEW ──────────────────────────────────────────────
+  window.updatePreview = () => {
+    const name = document.getElementById('pName').value || 'Nama Produk';
+    const price = parseInt(document.getElementById('pPrice').value) || 0;
+    const cat = document.getElementById('pCategory').value || 'Kategori';
+    const desc = document.getElementById('pDesc').value || 'Deskripsi produk akan muncul di sini...';
+    const icon = document.getElementById('pIcon').value || '📦';
+    document.getElementById('prevIcon').textContent = icon;
+    document.getElementById('prevName').textContent = name;
+    document.getElementById('prevPrice').textContent = 'Rp ' + price.toLocaleString('id-ID');
+    document.getElementById('prevCat').textContent = cat;
+    document.getElementById('prevDesc').textContent = desc;
+  };
+
+  // ── STATS ─────────────────────────────────────────────────────
+  function updateStats() {
+    document.getElementById('statProducts').textContent = products.length;
+    document.getElementById('statOrders').textContent = orders.length;
+    document.getElementById('statPending').textContent = orders.filter(o=>o.status==='pending').length;
+    document.getElementById('statDone').textContent = orders.filter(o=>o.status==='done').length;
+  }
+
+  // ── TOAST ─────────────────────────────────────────────────────
+  window.showToast = (msg, success=false) => {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'show'+(success?' success':'');
+    setTimeout(() => t.className='', 3000);
+  };
+</script>
+</body>
+</html>
